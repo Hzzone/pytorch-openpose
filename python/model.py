@@ -194,15 +194,15 @@ class handpose_model(nn.Module):
     def forward(self, x):
         out1_0 = self.model1_0(x)
         out1_1 = self.model1_1(out1_0)
-        concat_stage2 = torch.cat([out1_0, out1_1], 1)
+        concat_stage2 = torch.cat([out1_1, out1_0], 1)
         out_stage2 = self.model2(concat_stage2)
-        concat_stage3 = torch.cat([out1_0, out_stage2], 1)
+        concat_stage3 = torch.cat([out_stage2, out1_0], 1)
         out_stage3 = self.model3(concat_stage3)
-        concat_stage4 = torch.cat([out1_0, out_stage3], 1)
+        concat_stage4 = torch.cat([out_stage3, out1_0], 1)
         out_stage4 = self.model4(concat_stage4)
-        concat_stage5 = torch.cat([out1_0, out_stage4], 1)
+        concat_stage5 = torch.cat([out_stage4, out1_0], 1)
         out_stage5 = self.model5(concat_stage5)
-        concat_stage6 = torch.cat([out1_0, out_stage5], 1)
+        concat_stage6 = torch.cat([out_stage5, out1_0], 1)
         out_stage6 = self.model6(concat_stage6)
         return out_stage6
 
