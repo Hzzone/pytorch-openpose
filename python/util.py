@@ -33,6 +33,7 @@ def transfer(model, model_weights):
         transfered_model_weights[weights_name] = model_weights['.'.join(weights_name.split('.')[1:])]
     return transfered_model_weights
 
+# draw the body keypoint and lims
 def draw_bodypose(canvas, candidate, subset):
     stickwidth = 4
     limbSeq = [[2, 3], [2, 6], [3, 4], [4, 5], [6, 7], [7, 8], [2, 9], [9, 10], \
