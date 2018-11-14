@@ -19,16 +19,16 @@ pytorch implementation of [openpose](https://github.com/CMU-Perceptual-Computing
 
 <div align='center'>
 <img src='images/skeleton.jpg'>
-<div/>
+</div>
 
 #### Body Pose Estimation
 
 <div align='center'>
 <img src='images/body_preview.jpg'>
-<div/>
+</div>
 
-### Hand Pose Estimation
+#### Hand Pose Estimation
 
 <div align='center'>
 <img src='images/hand_preview.png'>
-<div/>
+</div>

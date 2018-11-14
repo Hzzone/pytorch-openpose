@@ -2,6 +2,7 @@ import numpy as np
 import math
 import cv2
 import matplotlib.pyplot as plt
+import matplotlib
 
 
 def padRightDownCorner(img, stride, padValue):
@@ -66,4 +67,30 @@ def draw_bodypose(canvas, candidate, subset):
             polygon = cv2.ellipse2Poly((int(mY), int(mX)), (int(length / 2), stickwidth), int(angle), 0, 360, 1)
             cv2.fillConvexPoly(cur_canvas, polygon, colors[i])
             canvas = cv2.addWeighted(canvas, 0.4, cur_canvas, 0.6, 0)
-    plt.imsave("preview.jpg", canvas[:, :, [2, 1, 0]])
+    # plt.imsave("preview.jpg", canvas[:, :, [2, 1, 0]])
+    plt.imshow(canvas[:, :, [2, 1, 0]])
+
+def draw_handpose(canvas, peaks):
+    edges = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8], [0, 9], [9, 10], \
+             [10, 11], [11, 12], [0, 13], [13, 14], [14, 15], [15, 16], [0, 17], [17, 18], [18, 19], [19, 20]]
+
+    plt.imshow(canvas[:, :, [2, 1, 0]])
+
+    for i, (x, y) in enumerate(peaks):
+        plt.plot(x, y, 'r.')
+        plt.text(x, y, str(i))
+    for ie, e in enumerate(edges):
+        rgb = matplotlib.colors.hsv_to_rgb([ie / float(len(edges)), 1.0, 1.0])
+        x1, y1 = peaks[e[0]]
+        x2, y2 = peaks[e[1]]
+        plt.plot([x1, x2], [y1, y2], color=rgb)
+    plt.axis('off')
+    plt.show()
+
+# get max index of 2d array
+def npmax(array):
+    arrayindex = array.argmax(1)
+    arrayvalue = array.max(1)
+    i = arrayvalue.argmax()
+    j = arrayindex[i]
+    return i, j

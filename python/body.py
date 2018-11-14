@@ -18,13 +18,6 @@ class Body(object):
         model_dict = util.transfer(self.model, torch.load(model_path))
         self.model.load_state_dict(model_dict)
         self.model.eval()
-        self.transform = transforms.Compose([
-            transforms.ToPILImage(),
-            transforms.CenterCrop(224),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                 std=[0.229, 0.224, 0.225])
-        ])
 
     def __call__(self, oriImg):
         # scale_search = [0.5, 1.0, 1.5, 2.0]
