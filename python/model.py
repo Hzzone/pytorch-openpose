@@ -25,7 +25,7 @@ class bodypose_model(nn.Module):
     def __init__(self):
         super(bodypose_model, self).__init__()
 
-        # these layers has no relu layer
+        # these layers have no relu layer
         no_relu_layers = ['conv5_5_CPM_L1', 'conv5_5_CPM_L2', 'Mconv7_stage2_L1',\
                           'Mconv7_stage2_L2', 'Mconv7_stage3_L1', 'Mconv7_stage3_L2',\
                           'Mconv7_stage4_L1', 'Mconv7_stage4_L2', 'Mconv7_stage5_L1',\
@@ -136,7 +136,7 @@ class handpose_model(nn.Module):
     def __init__(self):
         super(handpose_model, self).__init__()
 
-        # these layers has no relu layer
+        # these layers have no relu layer
         no_relu_layers = ['conv6_2_CPM', 'Mconv7_stage2', 'Mconv7_stage3',\
                           'Mconv7_stage4', 'Mconv7_stage5', 'Mconv7_stage6']
         # stage 1

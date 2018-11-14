@@ -206,9 +206,11 @@ class Body(object):
         return candidate, subset
 
 if __name__ == "__main__":
-    body_estimation = Body('model/body_pose_model.pth')
+    body_estimation = Body('../model/body_pose_model.pth')
 
-    test_image = 'images/ski.jpg'
+    test_image = '../images/ski.jpg'
     oriImg = cv2.imread(test_image)  # B,G,R order
     candidate, subset = body_estimation(oriImg)
-    util.draw_bodypose(oriImg, candidate, subset)
+    canvas = util.draw_bodypose(oriImg, candidate, subset)
+    plt.imshow(canvas[:, :, [2, 1, 0]])
+    plt.show()

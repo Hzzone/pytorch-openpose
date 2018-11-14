@@ -1,8 +1,6 @@
 import numpy as np
 import math
 import cv2
-import matplotlib.pyplot as plt
-import matplotlib
 
 
 def padRightDownCorner(img, stride, padValue):
@@ -49,7 +47,6 @@ def draw_bodypose(canvas, candidate, subset):
             index = int(subset[n][i])
             if index == -1:
                 continue
-            print(candidate[index][0:2])
             x, y = candidate[index][0:2]
             cv2.circle(canvas, (int(x), int(y)), 4, colors[i], thickness=-1)
     for i in range(17):
@@ -68,24 +65,91 @@ def draw_bodypose(canvas, candidate, subset):
             cv2.fillConvexPoly(cur_canvas, polygon, colors[i])
             canvas = cv2.addWeighted(canvas, 0.4, cur_canvas, 0.6, 0)
     # plt.imsave("preview.jpg", canvas[:, :, [2, 1, 0]])
-    plt.imshow(canvas[:, :, [2, 1, 0]])
+    # plt.imshow(canvas[:, :, [2, 1, 0]])
+    return canvas
 
-def draw_handpose(canvas, peaks):
+def draw_handpose(canvas, peaks, show_number=False, initial_x=0, initial_y=0):
     edges = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8], [0, 9], [9, 10], \
              [10, 11], [11, 12], [0, 13], [13, 14], [14, 15], [15, 16], [0, 17], [17, 18], [18, 19], [19, 20]]
+    colors = [[100, 100, 100], [100, 0, 0], [150, 0, 0], \
+             [200, 0, 0], [255, 0, 0], [100, 100, 0], [150, 150, 0], [200, 200, 0], \
+             [255, 255, 0], [0, 100, 50], [0, 150, 75], [0, 200, 100], [0, 255, 125], \
+             [0, 50, 100], [0, 75, 150], [0, 100, 200], \
+             [0, 125, 255], [100, 0, 100], [150, 0, 150], \
+             [200, 0, 200], [255, 0, 255]]
 
-    plt.imshow(canvas[:, :, [2, 1, 0]])
-
-    for i, (x, y) in enumerate(peaks):
-        plt.plot(x, y, 'r.')
-        plt.text(x, y, str(i))
     for ie, e in enumerate(edges):
-        rgb = matplotlib.colors.hsv_to_rgb([ie / float(len(edges)), 1.0, 1.0])
-        x1, y1 = peaks[e[0]]
-        x2, y2 = peaks[e[1]]
-        plt.plot([x1, x2], [y1, y2], color=rgb)
-    plt.axis('off')
-    plt.show()
+        if np.sum(np.all(peaks[e], axis=1)==0)==0:
+            cv2.line(canvas, tuple(peaks[e[0]]), tuple(peaks[e[1]]), colors[ie], thickness=1)
+    for i, keyponit in enumerate(peaks):
+        cv2.circle(canvas, tuple(keyponit), 2, (0, 0, 255), thickness=-1)
+        if show_number:
+            cv2.putText(canvas, str(i), tuple(keyponit), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 0, 0), lineType=cv2.LINE_AA)
+    return canvas
+
+# detect hand according to body pose keypoints
+# please refer to https://github.com/CMU-Perceptual-Computing-Lab/openpose/blob/master/src/openpose/hand/handDetector.cpp
+def handDetect(candidate, subset, oriImg):
+    # right hand: wrist 4, elbow 3, shoulder 2
+    # left hand: wrist 7, elbow 6, shoulder 5
+    ratioWristElbow = 0.33
+    detect_result = []
+    image_height, image_width = oriImg.shape[0:2]
+    for person in subset.astype(int):
+        # if any of three not detected
+        has_left = np.sum(person[[5, 6, 7]] == -1) == 0
+        has_right = np.sum(person[[2, 3, 4]] == -1) == 0
+        if not (has_left or has_right):
+            continue
+        hands = []
+        #left hand
+        if has_left:
+            left_shoulder_index, left_elbow_index, left_wrist_index = person[[5, 6, 7]]
+            x1, y1 = candidate[left_shoulder_index][:2]
+            x2, y2 = candidate[left_elbow_index][:2]
+            x3, y3 = candidate[left_wrist_index][:2]
+            hands.append([x1, y1, x2, y2, x3, y3, True])
+        # right hand
+        if has_right:
+            right_shoulder_index, right_elbow_index, right_wrist_index = person[[2, 3, 4]]
+            x1, y1 = candidate[right_shoulder_index][:2]
+            x2, y2 = candidate[right_elbow_index][:2]
+            x3, y3 = candidate[right_wrist_index][:2]
+            hands.append([x1, y1, x2, y2, x3, y3, False])
+
+        for x1, y1, x2, y2, x3, y3, is_left in hands:
+            # pos_hand = pos_wrist + ratio * (pos_wrist - pos_elbox) = (1 + ratio) * pos_wrist - ratio * pos_elbox
+            # handRectangle.x = posePtr[wrist*3] + ratioWristElbow * (posePtr[wrist*3] - posePtr[elbow*3]);
+            # handRectangle.y = posePtr[wrist*3+1] + ratioWristElbow * (posePtr[wrist*3+1] - posePtr[elbow*3+1]);
+            # const auto distanceWristElbow = getDistance(poseKeypoints, person, wrist, elbow);
+            # const auto distanceElbowShoulder = getDistance(poseKeypoints, person, elbow, shoulder);
+            # handRectangle.width = 1.5f * fastMax(distanceWristElbow, 0.9f * distanceElbowShoulder);
+            x = x3 + ratioWristElbow * (x3 - x2)
+            y = y3 + ratioWristElbow * (y3 - y2)
+            distanceWristElbow = math.sqrt((x3 - x2) ** 2 + (y3 - y2) ** 2)
+            distanceElbowShoulder = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+            width = 1.5 * max(distanceWristElbow, 0.9 * distanceElbowShoulder)
+            # x-y refers to the center --> offset to topLeft point
+            # handRectangle.x -= handRectangle.width / 2.f;
+            # handRectangle.y -= handRectangle.height / 2.f;
+            x -= width / 2
+            y -= width / 2  # width = height
+            # overflow the image
+            if x < 0: x = 0
+            if y < 0: y = 0
+            width1 = width
+            width2 = width
+            if x + width > image_width: width1 = image_width - x
+            if y + width > image_height: width2 = image_height - y
+            width = min(width1, width2)
+            detect_result.append([int(x), int(y), int(width), is_left])
+
+    '''
+    return value: [[x, y, w, True if left hand else False]].
+    width=height since the network require squared input.
+    x, y is the coordinate of top left 
+    '''
+    return detect_result
 
 # get max index of 2d array
 def npmax(array):
