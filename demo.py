@@ -11,7 +11,8 @@ import copy
 body_estimation = Body('model/body_pose_model.pth')
 hand_estimation = Hand('model/hand_pose_model.pth')
 
-test_image = 'images/demo.jpg'
+# test_image = 'images/demo.jpg'
+test_image = '/Users/hzzone/Desktop/1.jpeg'
 oriImg = cv2.imread(test_image)  # B,G,R order
 candidate, subset = body_estimation(oriImg)
 # canvas = util.draw_bodypose(oriImg, candidate, subset)
@@ -24,10 +25,10 @@ for x, y, w, is_left in hands_list:
     cv2.putText(canvas, 'left' if is_left else 'right', (x, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
     if is_left:
-        plt.imshow(oriImg[y:y+w, x:x+w, :][:, :, [2, 1, 0]])
-        plt.show()
-        # peaks = hand_estimation(oriImg[y:y+w, x:x+w, :])
-        # canvas = util.draw_handpose(canvas, peaks, True)
+        # plt.imshow(oriImg[y:y+w, x:x+w, :][:, :, [2, 1, 0]])
+        # plt.show()
+        peaks = hand_estimation(oriImg[y:y+w, x:x+w, :], x, y)
+        canvas = util.draw_handpose(canvas, peaks)
 
 plt.imshow(canvas[:, :, [2, 1, 0]])
 plt.show()

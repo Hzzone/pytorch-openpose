@@ -19,7 +19,7 @@ class Hand(object):
         self.model.load_state_dict(model_dict)
         self.model.eval()
 
-    def __call__(self, oriImg):
+    def __call__(self, oriImg, initial_x=0, initial_y=0):
         scale_search = [0.5, 1.0, 1.5, 2.0]
         # scale_search = [0.5]
         boxsize = 368
@@ -67,7 +67,7 @@ class Hand(object):
             map_ori[label_img == 0] = 0
 
             y, x = util.npmax(map_ori)
-            all_peaks.append([x, y])
+            all_peaks.append([x+initial_x, y+initial_y])
         return np.array(all_peaks)
 
 if __name__ == "__main__":

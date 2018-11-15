@@ -1,6 +1,8 @@
 import numpy as np
 import math
 import cv2
+import colorsys
+import matplotlib
 
 
 def padRightDownCorner(img, stride, padValue):
@@ -68,19 +70,13 @@ def draw_bodypose(canvas, candidate, subset):
     # plt.imshow(canvas[:, :, [2, 1, 0]])
     return canvas
 
-def draw_handpose(canvas, peaks, show_number=False, initial_x=0, initial_y=0):
+def draw_handpose(canvas, peaks, show_number=False):
     edges = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8], [0, 9], [9, 10], \
              [10, 11], [11, 12], [0, 13], [13, 14], [14, 15], [15, 16], [0, 17], [17, 18], [18, 19], [19, 20]]
-    colors = [[100, 100, 100], [100, 0, 0], [150, 0, 0], \
-             [200, 0, 0], [255, 0, 0], [100, 100, 0], [150, 150, 0], [200, 200, 0], \
-             [255, 255, 0], [0, 100, 50], [0, 150, 75], [0, 200, 100], [0, 255, 125], \
-             [0, 50, 100], [0, 75, 150], [0, 100, 200], \
-             [0, 125, 255], [100, 0, 100], [150, 0, 150], \
-             [200, 0, 200], [255, 0, 255]]
 
     for ie, e in enumerate(edges):
         if np.sum(np.all(peaks[e], axis=1)==0)==0:
-            cv2.line(canvas, tuple(peaks[e[0]]), tuple(peaks[e[1]]), colors[ie], thickness=1)
+            cv2.line(canvas, tuple(peaks[e[0]]), tuple(peaks[e[1]]), matplotlib.colors.hsv_to_rgb([ie/float(len(edges)), 1.0, 1.0])*255, thickness=2)
     for i, keyponit in enumerate(peaks):
         cv2.circle(canvas, tuple(keyponit), 2, (0, 0, 255), thickness=-1)
         if show_number:
@@ -142,7 +138,9 @@ def handDetect(candidate, subset, oriImg):
             if x + width > image_width: width1 = image_width - x
             if y + width > image_height: width2 = image_height - y
             width = min(width1, width2)
-            detect_result.append([int(x), int(y), int(width), is_left])
+            # the max hand box value is 20 pixels
+            if width >= 20:
+                detect_result.append([int(x), int(y), int(width), is_left])
 
     '''
     return value: [[x, y, w, True if left hand else False]].
