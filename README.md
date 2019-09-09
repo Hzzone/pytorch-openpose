@@ -1,15 +1,15 @@
 ## pytorch-openpose
 
-This is a modified version of the original repo specialized for body pose estimation using models trained on MPII-like data.e Estimation**, and the pytorch model is directly converted from [openpose](https://github.com/CMU-Perceptual-Computing-Lab/openpose) caffemodel by [caffemodel2pytorch](https://github.com/vadimkantorov/caffemodel2pytorch). You could implement face keypoint detection in the same way if you are interested in. Pay attention to that the face keypoint detector was trained using the procedure described in [Simon et al. 2017] for hands.
+This fork is a modified version of the original repo specialized for using OpenPose models on MPII-like data. 
 
 ### Model Download
-
+Here is the procedure to download a pre-trained MPII OpenPose model:
 ```
 mkdir model
 wget -P model/ https://www.dropbox.com/s/fol13clg8jl80bg/pose_iter_146000.caffemodel.pt
 ```
 
-This is the pre-trained model from from the [original CVPR 2017 OpenPose repo](https://github.com/ZheC/Realtime_Multi-Person_Pose_Estimation), converted using [caffemodel2pytorch](https://github.com/vadimkantorov/caffemodel2pytorch).  
+This is the pre-trained model from [original CVPR 2017 OpenPose repo](https://github.com/ZheC/Realtime_Multi-Person_Pose_Estimation), converted using [caffemodel2pytorch](https://github.com/vadimkantorov/caffemodel2pytorch).  
 For reference, the original caffe model can be found [here](http://posefs1.perception.cs.cmu.edu/Users/ZheCao/pose_iter_146000.caffemodel). 
 
 ### Citation
