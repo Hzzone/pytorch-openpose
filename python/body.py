@@ -10,6 +10,7 @@ from model import bodypose_model
 import torch
 from torchvision import transforms
 
+
 class Body(object):
     def __init__(self, model_path):
         self.model = bodypose_model()
@@ -204,6 +205,7 @@ class Body(object):
         # subset: n*20 array, 0-17 is the index in candidate, 18 is the total score, 19 is the total parts
         # candidate: x, y, score, id
         return candidate, subset
+
 
 if __name__ == "__main__":
     body_estimation = Body('../model/body_pose_model.pth')
