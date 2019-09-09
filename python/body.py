@@ -1,14 +1,13 @@
-import cv2
-import numpy as np
-import util
 import math
-import time
-from scipy.ndimage.filters import gaussian_filter
+
+import cv2
 import matplotlib.pyplot as plt
-import matplotlib
-from model import bodypose_model
+import numpy as np
 import torch
-from torchvision import transforms
+import util
+from scipy.ndimage.filters import gaussian_filter
+
+from model import bodypose_model
 
 
 class Body(object):
@@ -208,7 +207,7 @@ class Body(object):
 
 
 if __name__ == "__main__":
-    body_estimation = Body('../model/body_pose_model.pth')
+    body_estimation = Body('../model/pose_iter_146000.caffemodel.pt')
 
     test_image = '../images/ski.jpg'
     oriImg = cv2.imread(test_image)  # B,G,R order

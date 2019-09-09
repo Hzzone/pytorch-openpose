@@ -1,4 +1,5 @@
 from collections import OrderedDict
+
 import torch
 import torch.nn as nn
 
@@ -52,13 +53,13 @@ class bodypose_model(nn.Module):
                                 'conv5_2_CPM_L1': [128, 128, 3, 1, 1],
                                 'conv5_3_CPM_L1': [128, 128, 3, 1, 1],
                                 'conv5_4_CPM_L1': [128, 512, 1, 1, 0],
-                                'conv5_5_CPM_L1': [512, 38, 1, 1, 0]})
+                                'conv5_5_CPM_L1': [512, 28, 1, 1, 0]})
 
         block1_2 = OrderedDict({'conv5_1_CPM_L2': [128, 128, 3, 1, 1],
                                 'conv5_2_CPM_L2': [128, 128, 3, 1, 1],
                                 'conv5_3_CPM_L2': [128, 128, 3, 1, 1],
                                 'conv5_4_CPM_L2': [128, 512, 1, 1, 0],
-                                'conv5_5_CPM_L2': [512, 19, 1, 1, 0]})
+                                'conv5_5_CPM_L2': [512, 16, 1, 1, 0]})
         blocks['block1_1'] = block1_1
         blocks['block1_2'] = block1_2
 
@@ -67,22 +68,22 @@ class bodypose_model(nn.Module):
         # Stages 2 - 6
         for i in range(2, 7):
             blocks['block%d_1' % i] = OrderedDict({
-                'Mconv1_stage%d_L1' % i: [185, 128, 7, 1, 3],
+                'Mconv1_stage%d_L1' % i: [172, 128, 7, 1, 3],
                 'Mconv2_stage%d_L1' % i: [128, 128, 7, 1, 3],
                 'Mconv3_stage%d_L1' % i: [128, 128, 7, 1, 3],
                 'Mconv4_stage%d_L1' % i: [128, 128, 7, 1, 3],
                 'Mconv5_stage%d_L1' % i: [128, 128, 7, 1, 3],
                 'Mconv6_stage%d_L1' % i: [128, 128, 1, 1, 0],
-                'Mconv7_stage%d_L1' % i: [128, 38, 1, 1, 0]})
+                'Mconv7_stage%d_L1' % i: [128, 28, 1, 1, 0]})
 
             blocks['block%d_2' % i] = OrderedDict({
-                'Mconv1_stage%d_L2' % i: [185, 128, 7, 1, 3],
+                'Mconv1_stage%d_L2' % i: [172, 128, 7, 1, 3],
                 'Mconv2_stage%d_L2' % i: [128, 128, 7, 1, 3],
                 'Mconv3_stage%d_L2' % i: [128, 128, 7, 1, 3],
                 'Mconv4_stage%d_L2' % i: [128, 128, 7, 1, 3],
                 'Mconv5_stage%d_L2' % i: [128, 128, 7, 1, 3],
                 'Mconv6_stage%d_L2' % i: [128, 128, 1, 1, 0],
-                'Mconv7_stage%d_L2' % i: [128, 19, 1, 1, 0]})
+                'Mconv7_stage%d_L2' % i: [128, 16, 1, 1, 0]})
 
         for k in blocks.keys():
             blocks[k] = make_layers(blocks[k], no_relu_layers)
