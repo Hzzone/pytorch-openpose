@@ -28,8 +28,8 @@ class Body(object):
         thre1 = 0.1
         thre2 = 0.05
         multiplier = [x * boxsize / oriImg.shape[0] for x in scale_search]
-        heatmap_avg = np.zeros((oriImg.shape[0], oriImg.shape[1], 19))
-        paf_avg = np.zeros((oriImg.shape[0], oriImg.shape[1], 38))
+        heatmap_avg = np.zeros((oriImg.shape[0], oriImg.shape[1], 16))
+        paf_avg = np.zeros((oriImg.shape[0], oriImg.shape[1], 28))
 
         for m in range(len(multiplier)):
             scale = multiplier[m]
@@ -48,7 +48,6 @@ class Body(object):
             Mconv7_stage6_L2 = Mconv7_stage6_L2.cpu().numpy()
 
             # extract outputs, resize, and remove padding
-            # heatmap = np.transpose(np.squeeze(net.blobs[output_blobs.keys()[1]].data), (1, 2, 0))  # output 1 is heatmaps
             heatmap = np.transpose(np.squeeze(Mconv7_stage6_L2), (1, 2, 0))  # output 1 is heatmaps
             heatmap = cv2.resize(heatmap, (0, 0), fx=stride, fy=stride, interpolation=cv2.INTER_CUBIC)
             heatmap = heatmap[:imageToTest_padded.shape[0] - pad[2], :imageToTest_padded.shape[1] - pad[3], :]
@@ -65,8 +64,9 @@ class Body(object):
 
         all_peaks = []
         peak_counter = 0
+        num_parts = heatmap_avg.shape[-1]
 
-        for part in range(18):
+        for part in range(num_parts - 1):
             map_ori = heatmap_avg[:, :, part]
             one_heatmap = gaussian_filter(map_ori, sigma=3)
 
@@ -89,21 +89,19 @@ class Body(object):
             all_peaks.append(peaks_with_score_and_id)
             peak_counter += len(peaks)
 
-        # find connection in the specified sequence, center 29 is in the position 15
-        limbSeq = [[2, 3], [2, 6], [3, 4], [4, 5], [6, 7], [7, 8], [2, 9], [9, 10], \
-                   [10, 11], [2, 12], [12, 13], [13, 14], [2, 1], [1, 15], [15, 17], \
-                   [1, 16], [16, 18], [3, 17], [6, 18]]
+        # find connection in the specified sequence
+        limbSeq = [[1, 2], [2, 3], [3, 4], [4, 5], [2, 6], [6, 7], [7, 8], [2, 15],
+                   [15, 12], [12, 13], [13, 14], [15, 9], [9, 10], [10, 11]]
         # the middle joints heatmap correpondence
-        mapIdx = [[31, 32], [39, 40], [33, 34], [35, 36], [41, 42], [43, 44], [19, 20], [21, 22], \
-                  [23, 24], [25, 26], [27, 28], [29, 30], [47, 48], [49, 50], [53, 54], [51, 52], \
-                  [55, 56], [37, 38], [45, 46]]
+        mapIdx = [[16, 17], [18, 19], [20, 21], [22, 23], [24, 25], [26, 27], [28, 29], [30, 31],
+                  [38, 39], [40, 41], [42, 43], [32, 33], [34, 35], [36, 37]]
 
         connection_all = []
         special_k = []
         mid_num = 10
 
         for k in range(len(mapIdx)):
-            score_mid = paf_avg[:, :, [x - 19 for x in mapIdx[k]]]
+            score_mid = paf_avg[:, :, [x - 16 for x in mapIdx[k]]]
             candA = all_peaks[limbSeq[k][0] - 1]
             candB = all_peaks[limbSeq[k][1] - 1]
             nA = len(candA)
@@ -209,9 +207,9 @@ class Body(object):
 if __name__ == "__main__":
     body_estimation = Body('../model/pose_iter_146000.caffemodel.pt')
 
-    test_image = '../images/ski.jpg'
-    oriImg = cv2.imread(test_image)  # B,G,R order
-    candidate, subset = body_estimation(oriImg)
-    canvas = util.draw_bodypose(oriImg, candidate, subset)
-    plt.imshow(canvas[:, :, [2, 1, 0]])
-    plt.show()
+    for test_image in ['../images/ski.jpg', '../images/person.jpg', '../images/mpii_sample.jpg']:
+        oriImg = cv2.imread(test_image)  # B,G,R order
+        candidate, subset = body_estimation(oriImg)
+        canvas = util.draw_bodypose(oriImg, candidate, subset)
+        plt.imshow(canvas[:, :, [2, 1, 0]])
+        plt.show()
