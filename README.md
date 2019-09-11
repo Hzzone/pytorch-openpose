@@ -12,6 +12,12 @@ wget -P model/ https://www.dropbox.com/s/fol13clg8jl80bg/pose_iter_146000.caffem
 This is the pre-trained model from [original CVPR 2017 OpenPose repo](https://github.com/ZheC/Realtime_Multi-Person_Pose_Estimation), converted using [caffemodel2pytorch](https://github.com/vadimkantorov/caffemodel2pytorch).  
 For reference, the original caffe model can be found [here](http://posefs1.perception.cs.cmu.edu/Users/ZheCao/pose_iter_146000.caffemodel). 
 
+### Annotation Downloads
+```
+wget http://posefs1.perception.cs.cmu.edu/Users/ZheCao/masks_for_mpii_pose.tgz
+wget http://posefs1.perception.cs.cmu.edu/Users/ZheCao/MPI.json
+```
+
 ### Citation
 Please cite these papers in your publications if it helps your research (the face keypoint detector was trained using the procedure described in [Simon et al. 2017] for hands):
 

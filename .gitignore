@@ -5,3 +5,4 @@ hiddenlayer/
 .ipynb_checkpoints/
 __pycache__
 *.prototxt
+testing/
