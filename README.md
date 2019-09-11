@@ -13,6 +13,8 @@ This is the pre-trained model from [original CVPR 2017 OpenPose repo](https://gi
 For reference, the original caffe model can be found [here](http://posefs1.perception.cs.cmu.edu/Users/ZheCao/pose_iter_146000.caffemodel). 
 
 ### Annotation Downloads
+The only annotations that need to be downloaded are the MPII masks, which can be downloaded with the following commands.
+
 ```
 wget http://posefs1.perception.cs.cmu.edu/Users/ZheCao/masks_for_mpii_pose.tgz
 tar -xvf masks_for_mpii_pose.tgz -C python/
