@@ -15,6 +15,8 @@ For reference, the original caffe model can be found [here](http://posefs1.perce
 ### Annotation Downloads
 ```
 wget http://posefs1.perception.cs.cmu.edu/Users/ZheCao/masks_for_mpii_pose.tgz
+tar -xvf masks_for_mpii_pose.tgz -C python/
+rm masks_for_mpii_pose.tgz
 ```
 
 ### Citation
