@@ -18,6 +18,8 @@ Don't be mean to star this repo if it helps your research.
 
 ### Getting Started
 
+#### Install Requriements
+
 Create a python 3.7 environement, eg:
 
     conda create -n pytorch-openpose python=3.7
@@ -29,12 +31,25 @@ Install other requirements with pip
 
     pip install -r requirements.txt
 
-#### Model Download
+#### Download the Models
+
 * [dropbox](https://www.dropbox.com/sh/7xbup2qsn7vvjxo/AABWFksdlgOMXR_r5v3RwKRYa?dl=0)
 
 `*.pth` files are pytorch model, you could also download caffemodel file if you want to use caffe as backend.
 
 Download the pytorch models and put them in a directory named `model` in the project root directory
+
+#### Run the Demo
+
+Run:
+
+    python demo_camera.py
+
+to run a demo with a feed from your webcam or run
+
+    python demo.py
+
+to use a image from the images folder.
 
 ### Todo list
 - [x] convert caffemodel to pytorch.
