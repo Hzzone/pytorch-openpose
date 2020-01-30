@@ -4,10 +4,10 @@ import copy
 import numpy as np
 import torch
 
-from python import model
-from python import util
-from python.body import Body
-from python.hand import Hand
+from src import model
+from src import util
+from src.body import Body
+from src.hand import Hand
 
 body_estimation = Body('model/body_pose_model.pth')
 hand_estimation = Hand('model/hand_pose_model.pth')
