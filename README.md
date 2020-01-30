@@ -20,13 +20,14 @@ Don't be mean to star this repo if it helps your research.
 
 Create a python 3.7 environement, eg:
 
-  conda create -n pytorch-openpose python=3.7
+    conda create -n pytorch-openpose python=3.7
+    conda activate pytorch-openpose
 
 Install pytorch by following the quick start guide here (use pip) https://download.pytorch.org/whl/torch_stable.html
 
 Install other requirements with pip
 
-  pip install -r requirements.txt
+    pip install -r requirements.txt
 
 #### Model Download
 * [dropbox](https://www.dropbox.com/sh/7xbup2qsn7vvjxo/AABWFksdlgOMXR_r5v3RwKRYa?dl=0)
