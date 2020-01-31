@@ -1,16 +1,18 @@
-import sys
-sys.path.insert(0, 'python')
 import cv2
-import model
-import util
-from hand import Hand
-from body import Body
 import matplotlib.pyplot as plt
 import copy
 import numpy as np
+import torch
+
+from src import model
+from src import util
+from src.body import Body
+from src.hand import Hand
 
 body_estimation = Body('model/body_pose_model.pth')
 hand_estimation = Hand('model/hand_pose_model.pth')
+
+print(f"Torch device: {torch.cuda.get_device_name()}")
 
 cap = cv2.VideoCapture(0)
 cap.set(3, 640)
