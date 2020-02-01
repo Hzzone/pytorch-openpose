@@ -34,6 +34,7 @@ Install other requirements with pip
 #### Download the Models
 
 * [dropbox](https://www.dropbox.com/sh/7xbup2qsn7vvjxo/AABWFksdlgOMXR_r5v3RwKRYa?dl=0)
+* [baiduyun](https://pan.baidu.com/s/1IlkvuSi0ocNckwbnUe7j-g)
 
 `*.pth` files are pytorch model, you could also download caffemodel file if you want to use caffe as backend.
 
