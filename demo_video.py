@@ -3,6 +3,7 @@ import numpy as np
 import cv2
 from glob import glob
 import os
+import argparse
 
 # openpose setup
 from src import model
@@ -13,21 +14,21 @@ from src.hand import Hand
 body_estimation = Body('model/body_pose_model.pth')
 hand_estimation = Hand('model/hand_pose_model.pth')
 
-def process_frame(frame):
-    candidate, subset = body_estimation(frame)
+def process_frame(frame, body=True, hands=True):
     canvas = copy.deepcopy(frame)
-    canvas = util.draw_bodypose(canvas, candidate, subset)
-    # detect hand
-    hands_list = util.handDetect(candidate, subset, frame)
-
-    all_hand_peaks = []
-    for x, y, w, is_left in hands_list:
-        peaks = hand_estimation(frame[y:y+w, x:x+w, :])
-        peaks[:, 0] = np.where(peaks[:, 0]==0, peaks[:, 0], peaks[:, 0]+x)
-        peaks[:, 1] = np.where(peaks[:, 1]==0, peaks[:, 1], peaks[:, 1]+y)
-        all_hand_peaks.append(peaks)
-
-    return util.draw_handpose(canvas, all_hand_peaks)
+    if body:
+        candidate, subset = body_estimation(frame)
+        canvas = util.draw_bodypose(canvas, candidate, subset)
+    if hands:
+        hands_list = util.handDetect(candidate, subset, frame)
+        all_hand_peaks = []
+        for x, y, w, is_left in hands_list:
+            peaks = hand_estimation(frame[y:y+w, x:x+w, :])
+            peaks[:, 0] = np.where(peaks[:, 0]==0, peaks[:, 0], peaks[:, 0]+x)
+            peaks[:, 1] = np.where(peaks[:, 1]==0, peaks[:, 1], peaks[:, 1]+y)
+            all_hand_peaks.append(peaks)
+        canvas = util.draw_handpose(canvas, all_hand_peaks)
+    return canvas
 
 # writing video with ffmpeg
 # https://stackoverflow.com/questions/61036822/opencv-videowriter-produces-cant-find-starting-number-error
@@ -36,8 +37,14 @@ import ffmpeg
 def to8(img):
     return (img/256).astype('uint8')
 
-# open the first video file found in .videos/
-video_file = next(iter(glob("videos/*")))
+# open specified video
+parser = argparse.ArgumentParser(
+        description="Process a video annotating poses detected.")
+parser.add_argument('file', type=str, help='Video file location to process.')
+parser.add_argument('--no_hands', action='store_true', help='No hand pose')
+parser.add_argument('--no_body', action='store_true', help='No body pose')
+args = parser.parse_args()
+video_file = args.file
 cap = cv2.VideoCapture(video_file)
 
 # pull video file info
@@ -73,7 +80,6 @@ class Writer():
         self.ff_proc.wait()
 
 
-# why isn't this a with statement??
 writer = None
 while(cap.isOpened()):
     ret, frame = cap.read()
@@ -83,12 +89,12 @@ while(cap.isOpened()):
     if writer is None:
         input_framesize = frame.shape[:2]
         writer = Writer(output_file, input_fps, input_framesize)
-    posed_frame = process_frame(frame)
+    posed_frame = process_frame(frame, body=not args.no_body,
+                                       hands=not args.no_hands)
 
-    # cv2.imshow('frame', gray)
+    cv2.imshow('frame', posed_frame)
 
     # write the frame
-    # writer(frame)
     writer(posed_frame)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
