@@ -30,7 +30,7 @@ def process_frame(frame, body=True, hands=True):
         canvas = util.draw_handpose(canvas, all_hand_peaks)
     return canvas
 
-# writing video with ffmpeg
+# writing video with ffmpeg because cv2 writer failed
 # https://stackoverflow.com/questions/61036822/opencv-videowriter-produces-cant-find-starting-number-error
 import ffmpeg
 
@@ -55,7 +55,6 @@ input_fps = cap.get(5)
 assert len(video_file.split(".")) == 2, \
         "file/dir names must not contain extra ."
 output_file = video_file.split(".")[0]+".processed.avi"
-# fourcc = cv2.VideoWriter_fourcc(*'XVID')
 
 
 class Writer():
@@ -68,6 +67,7 @@ class Writer():
                    format='rawvideo',
                    pix_fmt='gray' if gray else 'rgb24',
                    s='%sx%s'%(input_framesize[1],input_framesize[0]))
+            .filter('fps', fps=input_fps, round='up')
             .output(output_file, pix_fmt='yuv420p')
             .run_async(pipe_stdin=True)
         )
