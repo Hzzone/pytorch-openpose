@@ -4,6 +4,35 @@ import cv2
 from glob import glob
 import os
 import argparse
+import json
+
+# video file processing setup
+# from: https://stackoverflow.com/a/61927951
+import argparse
+import subprocess
+import sys
+from pathlib import Path
+from typing import NamedTuple
+
+
+class FFProbeResult(NamedTuple):
+    return_code: int
+    json: str
+    error: str
+
+
+def ffprobe(file_path) -> FFProbeResult:
+    command_array = ["ffprobe",
+                     "-v", "quiet",
+                     "-print_format", "json",
+                     "-show_format",
+                     "-show_streams",
+                     file_path]
+    result = subprocess.run(command_array, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+    return FFProbeResult(return_code=result.returncode,
+                         json=result.stdout,
+                         error=result.stderr)
+
 
 # openpose setup
 from src import model
@@ -34,9 +63,6 @@ def process_frame(frame, body=True, hands=True):
 # https://stackoverflow.com/questions/61036822/opencv-videowriter-produces-cant-find-starting-number-error
 import ffmpeg
 
-def to8(img):
-    return (img/256).astype('uint8')
-
 # open specified video
 parser = argparse.ArgumentParser(
         description="Process a video annotating poses detected.")
@@ -47,28 +73,34 @@ args = parser.parse_args()
 video_file = args.file
 cap = cv2.VideoCapture(video_file)
 
-# pull video file info
-# don't know why this is how it's defined https://stackoverflow.com/questions/52068277/change-frame-rate-in-opencv-3-4-2
-input_fps = cap.get(5) 
+# get video file info
+ffprobe_result = ffprobe(args.file)
+info = json.loads(ffprobe_result.json)
+videoinfo = [i for i in info["streams"] if i["codec_type"] == "video"][0]
+input_fps = videoinfo["avg_frame_rate"]
+# input_fps = float(input_fps[0])/float(input_fps[1])
+input_pix_fmt = videoinfo["pix_fmt"]
+input_vcodec = videoinfo["codec_name"]
 
 # define a writer object to write to a movidified file
-assert len(video_file.split(".")) == 2, \
-        "file/dir names must not contain extra ."
-output_file = video_file.split(".")[0]+".processed.avi"
+postfix = info["format"]["format_name"].split(",")[0]
+output_file = ".".join(video_file.split(".")[:-1])+".processed." + postfix
 
 
 class Writer():
-    def __init__(self, output_file, input_fps, input_framesize, gray=False):
+    def __init__(self, output_file, input_fps, input_framesize, input_pix_fmt,
+                 input_vcodec):
         if os.path.exists(output_file):
             os.remove(output_file)
         self.ff_proc = (
             ffmpeg
             .input('pipe:',
                    format='rawvideo',
-                   pix_fmt='gray' if gray else 'rgb24',
-                   s='%sx%s'%(input_framesize[1],input_framesize[0]))
-            .filter('fps', fps=input_fps, round='up')
-            .output(output_file, pix_fmt='yuv420p')
+                   pix_fmt="bgr24",
+                   s='%sx%s'%(input_framesize[1],input_framesize[0]),
+                   r=input_fps)
+            .output(output_file, pix_fmt=input_pix_fmt, vcodec=input_vcodec)
+            .overwrite_output()
             .run_async(pipe_stdin=True)
         )
 
@@ -86,11 +118,13 @@ while(cap.isOpened()):
     if frame is None:
         break
 
-    if writer is None:
-        input_framesize = frame.shape[:2]
-        writer = Writer(output_file, input_fps, input_framesize)
     posed_frame = process_frame(frame, body=not args.no_body,
                                        hands=not args.no_hands)
+
+    if writer is None:
+        input_framesize = posed_frame.shape[:2]
+        writer = Writer(output_file, input_fps, input_framesize, input_pix_fmt,
+                        input_vcodec)
 
     cv2.imshow('frame', posed_frame)
 

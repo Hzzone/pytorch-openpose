@@ -50,7 +50,13 @@ to run a demo with a feed from your webcam or run
 
     python demo.py
 
-to use a image from the images folder.
+to use a image from the images folder or run 
+
+    python demo_video.py <video-file>
+
+to process a video file (requires [ffmpeg-python][ffmpeg]).
+
+[ffmpeg]: https://pypi.org/project/ffmpeg-python/
 
 ### Todo list
 - [x] convert caffemodel to pytorch.
@@ -72,6 +78,18 @@ to use a image from the images folder.
 
 #### Body + Hand
 ![](images/demo_preview.png)
+
+#### Video Body
+
+![](images/kc-e129SBb4-sample.processed.gif)
+
+Attribution: [this video](https://www.youtube.com/watch?v=kc-e129SBb4).
+
+#### Video Hand
+
+![](images/yOAmYSW3WyU-sample.small.processed.gif)
+
+Attribution: [this video](https://www.youtube.com/watch?v=yOAmYSW3WyU).
 
 ### Citation
 Please cite these papers in your publications if it helps your research (the face keypoint detector was trained using the procedure described in [Simon et al. 2017] for hands):
