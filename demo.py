@@ -8,10 +8,10 @@ from src import util
 from src.body import Body
 from src.hand import Hand
 
-body_estimation = Body('model/body_pose_model.pth')
-hand_estimation = Hand('model/hand_pose_model.pth')
+body_estimation = Body('/Midgard/home/tibbe/thesis/pytorch-openpose/model/body_pose_model.pth')
+hand_estimation = Hand('/Midgard/home/tibbe/thesis/pytorch-openpose/model/hand_pose_model.pth')
 
-test_image = 'images/demo.jpg'
+test_image = '/Midgard/home/tibbe/thesis/pytorch-openpose/images/detect_hand_preview.jpg'
 oriImg = cv2.imread(test_image)  # B,G,R order
 candidate, subset = body_estimation(oriImg)
 canvas = copy.deepcopy(oriImg)

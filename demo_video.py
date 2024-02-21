@@ -3,7 +3,6 @@ import numpy as np
 import cv2
 from glob import glob
 import os
-import argparse
 import json
 
 # video file processing setup
@@ -40,13 +39,18 @@ from src import util
 from src.body import Body
 from src.hand import Hand
 
-body_estimation = Body('model/body_pose_model.pth')
-hand_estimation = Hand('model/hand_pose_model.pth')
+import torch
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+body_estimation = Body('/Midgard/home/tibbe/thesis/pytorch-openpose/model/body_pose_model.pth')
+hand_estimation = Hand('/Midgard/home/tibbe/thesis/pytorch-openpose/model/hand_pose_model.pth')
 
 def process_frame(frame, body=True, hands=True):
     canvas = copy.deepcopy(frame)
     if body:
         candidate, subset = body_estimation(frame)
+        print(candidate)
+        print(subset)
         canvas = util.draw_bodypose(canvas, candidate, subset)
     if hands:
         hands_list = util.handDetect(candidate, subset, frame)
@@ -69,13 +73,15 @@ parser = argparse.ArgumentParser(
 parser.add_argument('file', type=str, help='Video file location to process.')
 parser.add_argument('--no_hands', action='store_true', help='No hand pose')
 parser.add_argument('--no_body', action='store_true', help='No body pose')
-args = parser.parse_args()
+# args = parser.parse_args()
+args = parser.parse_args(["/Midgard/home/tibbe/thesis/data/test.MOV", "--no_hands"])
 video_file = args.file
 cap = cv2.VideoCapture(video_file)
 
 # get video file info
 ffprobe_result = ffprobe(args.file)
 info = json.loads(ffprobe_result.json)
+print(info)
 videoinfo = [i for i in info["streams"] if i["codec_type"] == "video"][0]
 input_fps = videoinfo["avg_frame_rate"]
 # input_fps = float(input_fps[0])/float(input_fps[1])
@@ -113,27 +119,36 @@ class Writer():
 
 
 writer = None
-while(cap.isOpened()):
-    ret, frame = cap.read()
-    if frame is None:
-        break
+try:
+    for i in range(int(info['streams'][0]['nb_frames'])):
+    # while(cap.isOpened()):
+        ret, frame = cap.read()
+        if frame is None:
+            break
 
-    posed_frame = process_frame(frame, body=not args.no_body,
-                                       hands=not args.no_hands)
+        posed_frame = process_frame(frame, body=not args.no_body,
+                                        hands=not args.no_hands)
 
-    if writer is None:
-        input_framesize = posed_frame.shape[:2]
-        writer = Writer(output_file, input_fps, input_framesize, input_pix_fmt,
-                        input_vcodec)
+        if writer is None:
+            input_framesize = posed_frame.shape[:2]
+            writer = Writer(output_file, input_fps, input_framesize, input_pix_fmt,
+                            input_vcodec)
 
-    cv2.imshow('frame', posed_frame)
+        # cv2.imshow('frame', posed_frame)
 
-    # write the frame
-    writer(posed_frame)
+        # write the frame
+        writer(posed_frame)
 
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+        # if KeyboardInterrupt:
+        #     break
+        # if cv2.waitKey(1) & 0xFF == ord('q'):
+        #     break
+except KeyboardInterrupt:
+    print("KeyboardInterrupt")
+    cap.release()
+    writer.close()
+    print("Closed video file.")
 
 cap.release()
 writer.close()
-cv2.destroyAllWindows()
+# cv2.destroyAllWindows()

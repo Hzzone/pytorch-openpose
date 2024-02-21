@@ -1,3 +1,4 @@
+import os
 import cv2
 import numpy as np
 import math
@@ -7,16 +8,21 @@ import matplotlib.pyplot as plt
 import matplotlib
 import torch
 from torchvision import transforms
+import json
+import torchvision
 
-from src import util
-from src.model import bodypose_model
+model = torchvision.models.detection.__dict__['keypointrcnn_resnet50_fpn'](num_classes=2, pretrained=True)
+model = torchvision.models.detection.maskrcnn_resnet50_fpn
+
+import util
+from model import bodypose_model
 
 class Body(object):
     def __init__(self, model_path):
         self.model = bodypose_model()
         if torch.cuda.is_available():
             self.model = self.model.cuda()
-        model_dict = util.transfer(self.model, torch.load(model_path))
+        model_dict = util.transfer(self.model, torch.load(model_path, map_location='cuda' if torch.cuda.is_available() else 'cpu'))
         self.model.load_state_dict(model_dict)
         self.model.eval()
 
@@ -208,11 +214,101 @@ class Body(object):
         return candidate, subset
 
 if __name__ == "__main__":
-    body_estimation = Body('../model/body_pose_model.pth')
+    body_estimation = Body('model/body_pose_model.pth')
 
-    test_image = '../images/ski.jpg'
-    oriImg = cv2.imread(test_image)  # B,G,R order
-    candidate, subset = body_estimation(oriImg)
-    canvas = util.draw_bodypose(oriImg, candidate, subset)
-    plt.imshow(canvas[:, :, [2, 1, 0]])
-    plt.show()
+    test_image = 'ID01_fullterm_hypotermi_HINE21_MR djup asfyxi_13w F- (Nemo)_anon.mp4'
+    cap = cv2.VideoCapture(test_image)
+
+    sequence = []
+    n = 0
+    try:
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
+            start = time.time()
+            candidate, subset = body_estimation(frame)
+            print("Processing time: {:.4f} sec".format(time.time() - start))
+            canvas = util.draw_bodypose(frame, candidate, subset)
+            # cv2.imwrite('frame.png', canvas)
+            keypoints = (-1)*np.ones((18, 3))
+            people = []
+            for j in range(len(subset)):
+                for i in range(18):
+                    index = int(subset[j][i])
+                    if index != -1:
+                        keypoints[i] = candidate[index, :3]
+                people.append({"person_id": j, "pose_keypoints_2d": keypoints.flatten().tolist()})
+            
+            sequence.append({"frame_id": n, "people": people})
+
+            n += 1
+            
+            # if cv2.waitKey(1) & 0xFF == ord('q'):
+            #     break
+    
+    except KeyboardInterrupt:
+        print("Interrupted, let me wrap up...")
+        
+    finally:
+        print("Wrapping up...")
+        cap.release()    
+
+        out_dict = {
+            "body_pose": "coco",
+            "body_parts": ["Nose", "Neck", "RShoulder", "RElbow", "RWrist", "LShoulder", "LElbow", "LWrist", "RHip", "RKnee", "RAnkle", "LHip", "LKnee", "LAnkle", "REye", "LEye", "REar", "LEar"],
+            "pairs": [[1,2], [1,5], [2,3], [3,4], [5,6], [6,7], [1,8], [8,9], [9,10], [1,11], [11,12], [12,13], [1,0], [0,14], [14,16], [0,15], [15,17], [2,16], [5,17]],
+            "pose_sequence": sequence
+        }
+
+        with open('pose_keypoints.json', 'w') as f:
+            json.dump(out_dict, f)
+
+        print("Done!")
+
+    # cv2.imwrite('result.png', canvas)
+    
+    # plt.imshow(canvas[:, :, [2, 1, 0]])
+    # plt.show()
+
+    # POSE_COCO_BODY_PARTS {
+    #     {0,  "Nose"},
+    #     {1,  "Neck"},
+    #     {2,  "RShoulder"},
+    #     {3,  "RElbow"},
+    #     {4,  "RWrist"},
+    #     {5,  "LShoulder"},
+    #     {6,  "LElbow"},
+    #     {7,  "LWrist"},
+    #     {8,  "RHip"},
+    #     {9,  "RKnee"},
+    #     {10, "RAnkle"},
+    #     {11, "LHip"},
+    #     {12, "LKnee"},
+    #     {13, "LAnkle"},
+    #     {14, "REye"},
+    #     {15, "LEye"},
+    #     {16, "REar"},
+    #     {17, "LEar"},
+    #     {18, "Bkg"},
+    # }
+
+    # POSE_COCO_PAIRS    {1,2,   
+    #                     1,5,   
+    #                     2,3,   
+    #                     3,4,   
+    #                     5,6,   
+    #                     6,7,   
+    #                     1,8,   
+    #                     8,9,   
+    #                     9,10, 
+    #                     1,11,  
+    #                     11,12, 
+    #                     12,13,
+    #                     1,0,   
+    #                     0,14, 
+    #                     14,16,  
+    #                     0,15, 
+    #                     15,17,   
+    #                     2,16,  
+    #                     5,17};

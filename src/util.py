@@ -55,6 +55,7 @@ def draw_bodypose(canvas, candidate, subset):
                 continue
             x, y = candidate[index][0:2]
             cv2.circle(canvas, (int(x), int(y)), 4, colors[i], thickness=-1)
+            plt.imsave("preview.jpg", canvas[:, :, [2, 1, 0]])
     for i in range(17):
         for n in range(len(subset)):
             index = subset[n][np.array(limbSeq[i]) - 1]
@@ -70,9 +71,69 @@ def draw_bodypose(canvas, candidate, subset):
             polygon = cv2.ellipse2Poly((int(mY), int(mX)), (int(length / 2), stickwidth), int(angle), 0, 360, 1)
             cv2.fillConvexPoly(cur_canvas, polygon, colors[i])
             canvas = cv2.addWeighted(canvas, 0.4, cur_canvas, 0.6, 0)
+            plt.imsave("preview.jpg", canvas[:, :, [2, 1, 0]])
     # plt.imsave("preview.jpg", canvas[:, :, [2, 1, 0]])
     # plt.imshow(canvas[:, :, [2, 1, 0]])
     return canvas
+
+def draw_bodypose_from_jointTrajectory(canvas, jointTrajectory, frame_id):
+    """
+    Draw body pose on frame from jointTrajectory.
+    :param canvas: np.array
+    :param jointTrajectory: dict
+    :param frame_id: int
+    :return: np.array
+
+    jointTrajectory: {
+        "x": [x1, x2, ...],
+        "y": [y1, y2, ...],
+        "c": [c1, c2, ...]
+    }    
+    """
+    canvas
+    stickwidth = 4
+    limbSeq = [[2, 3], [2, 6], [3, 4], [4, 5], [6, 7], [7, 8], [2, 9], [9, 10], \
+               [10, 11], [2, 12], [12, 13], [13, 14], [2, 1], [1, 15], [15, 17], \
+               [1, 16], [16, 18], [3, 17], [6, 18]]
+
+    colors = [[255, 0, 0], [255, 85, 0], [255, 170, 0], [255, 255, 0], [170, 255, 0], [85, 255, 0], [0, 255, 0], \
+              [0, 255, 85], [0, 255, 170], [0, 255, 255], [0, 170, 255], [0, 85, 255], [0, 0, 255], [85, 0, 255], \
+              [170, 0, 255], [255, 0, 255], [255, 0, 170], [255, 0, 85]]
+    
+    # draw joints
+    for i in range(18):
+        x = jointTrajectory['x'][frame_id][i]
+        y = jointTrajectory['y'][frame_id][i]
+        c = jointTrajectory['c'][frame_id][i]
+
+        if c > 0.1:
+            cv2.circle(canvas, (int(x), int(y)), 4, colors[i], thickness=-1)
+            # plt.imsave("preview.jpg", canvas[:, :, [2, 1, 0]])
+
+    # connect joints
+    for i in range(17):
+        x1 = jointTrajectory['x'][frame_id][limbSeq[i][0]-1]
+        y1 = jointTrajectory['y'][frame_id][limbSeq[i][0]-1]
+        c1 = jointTrajectory['c'][frame_id][limbSeq[i][0]-1]
+        x2 = jointTrajectory['x'][frame_id][limbSeq[i][1]-1]
+        y2 = jointTrajectory['y'][frame_id][limbSeq[i][1]-1]
+        c2 = jointTrajectory['c'][frame_id][limbSeq[i][1]-1]
+        
+        if c1 > 0.1 and c2 > 0.1:
+            cur_canvas = canvas.copy()
+            mX = (x1 + x2) / 2
+            mY = (y1 + y2) / 2
+            length = ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5
+            angle = math.degrees(math.atan2(y1 - y2, x1 - x2))
+            polygon = cv2.ellipse2Poly((int(mX), int(mY)), (int(length / 2), stickwidth), int(angle), 0, 360, 1)
+            cv2.fillConvexPoly(cur_canvas, polygon, colors[i])
+            canvas = cv2.addWeighted(canvas, 0.4, cur_canvas, 0.6, 0)
+            # plt.imsave("preview.jpg", canvas[:, :, [2, 1, 0]])
+
+    return canvas
+
+
+
 
 def draw_handpose(canvas, all_hand_peaks, show_number=False):
     edges = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8], [0, 9], [9, 10], \
