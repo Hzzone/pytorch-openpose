@@ -2,7 +2,7 @@ import torch
 from tqdm import tqdm
 import json
 
-from src.model import handpose_model
+from openpose.model import handpose_model
 
 model = handpose_model()
 
