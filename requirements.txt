@@ -4,3 +4,4 @@ opencv-python
 scipy
 scikit-image
 tqdm
+accelerate

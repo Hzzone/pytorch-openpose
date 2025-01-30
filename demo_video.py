@@ -1,7 +1,6 @@
 import copy
 import numpy as np
 import cv2
-from glob import glob
 import os
 import argparse
 import json
@@ -10,9 +9,9 @@ import json
 # from: https://stackoverflow.com/a/61927951
 import argparse
 import subprocess
-import sys
-from pathlib import Path
+
 from typing import NamedTuple
+from tqdm import tqdm
 
 
 class FFProbeResult(NamedTuple):
@@ -35,7 +34,6 @@ def ffprobe(file_path) -> FFProbeResult:
 
 
 # openpose setup
-from src import model
 from src import util
 from src.body import Body
 from src.hand import Hand
@@ -113,6 +111,8 @@ class Writer():
 
 
 writer = None
+pbar = tqdm(total=int(cap.get(cv2.CAP_PROP_FRAME_COUNT)))
+
 while(cap.isOpened()):
     ret, frame = cap.read()
     if frame is None:
@@ -130,6 +130,7 @@ while(cap.isOpened()):
 
     # write the frame
     writer(posed_frame)
+    pbar.update()
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
