@@ -20,7 +20,7 @@ Don't be mean to star this repo if it helps your research.
 
 #### Install Requriements
 
-Create a python 3.7 environement, eg:
+Create a python 3.7 environement (3.9 is also a valid version for Mac users), eg:
 
     conda create -n pytorch-openpose python=3.7
     conda activate pytorch-openpose
@@ -49,7 +49,7 @@ Run:
 
 to run a demo with a feed from your webcam or run
 
-    python demo.py
+    python demo.py [-i <optional: image-file>] [-o <optional: output-image-path>]
 
 to use a image from the images folder or run 
 

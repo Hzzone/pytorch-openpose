@@ -6,3 +6,5 @@ hiddenlayer/
 __pycache__
 *.prototxt
 videos/
+*.env
+*.venv

@@ -1,12 +1,11 @@
 import cv2
 import numpy as np
 import math
-import time
 from scipy.ndimage.filters import gaussian_filter
 import matplotlib.pyplot as plt
-import matplotlib
 import torch
-from torchvision import transforms
+
+from accelerate import Accelerator
 
 from src import util
 from src.model import bodypose_model
@@ -16,6 +15,11 @@ class Body(object):
         self.model = bodypose_model()
         if torch.cuda.is_available():
             self.model = self.model.cuda()
+            self.device = torch.device("cuda")
+        else:
+            self.device = Accelerator().device
+            self.model = self.model.to(self.device)
+
         model_dict = util.transfer(self.model, torch.load(model_path))
         self.model.load_state_dict(model_dict)
         self.model.eval()
@@ -39,9 +43,7 @@ class Body(object):
             im = np.transpose(np.float32(imageToTest_padded[:, :, :, np.newaxis]), (3, 2, 0, 1)) / 256 - 0.5
             im = np.ascontiguousarray(im)
 
-            data = torch.from_numpy(im).float()
-            if torch.cuda.is_available():
-                data = data.cuda()
+            data = torch.from_numpy(im).float().to(self.device)
             # data = data.permute([2, 0, 1]).unsqueeze(0).float()
             with torch.no_grad():
                 Mconv7_stage6_L1, Mconv7_stage6_L2 = self.model(data)

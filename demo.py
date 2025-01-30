@@ -1,18 +1,29 @@
+import os
 import cv2
 import matplotlib.pyplot as plt
 import copy
 import numpy as np
 
-from src import model
+from argparse import ArgumentParser
+from tqdm import tqdm
+
 from src import util
 from src.body import Body
 from src.hand import Hand
 
+
+this_dir = os.path.dirname(__file__)
+
+parser = ArgumentParser()
+parser.add_argument("-i", "--input", type=str, default=os.path.join(this_dir, "images/demo.jpg"))
+parser.add_argument("-o", "--output", type=str)
+
+args = parser.parse_args()
+
 body_estimation = Body('model/body_pose_model.pth')
 hand_estimation = Hand('model/hand_pose_model.pth')
 
-test_image = 'images/demo.jpg'
-oriImg = cv2.imread(test_image)  # B,G,R order
+oriImg = cv2.imread(args.input)  # B,G,R order
 candidate, subset = body_estimation(oriImg)
 canvas = copy.deepcopy(oriImg)
 canvas = util.draw_bodypose(canvas, candidate, subset)
@@ -20,7 +31,7 @@ canvas = util.draw_bodypose(canvas, candidate, subset)
 hands_list = util.handDetect(candidate, subset, oriImg)
 
 all_hand_peaks = []
-for x, y, w, is_left in hands_list:
+for x, y, w, is_left in tqdm(hands_list):
     # cv2.rectangle(canvas, (x, y), (x+w, y+w), (0, 255, 0), 2, lineType=cv2.LINE_AA)
     # cv2.putText(canvas, 'left' if is_left else 'right', (x, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
@@ -39,6 +50,9 @@ for x, y, w, is_left in hands_list:
 
 canvas = util.draw_handpose(canvas, all_hand_peaks)
 
-plt.imshow(canvas[:, :, [2, 1, 0]])
-plt.axis('off')
-plt.show()
+if args.output is None:
+    plt.imshow(canvas[:, :, [2, 1, 0]])
+    plt.axis('off')
+    plt.show()
+else:
+    cv2.imwrite(args.output)
