@@ -101,7 +101,7 @@ def draw_handpose(canvas, all_hand_peaks, show_number=False):
             if show_number:
                 ax.text(x, y, str(i))
     bg.draw()
-    canvas = np.fromstring(bg.tostring_rgb(), dtype='uint8').reshape(int(height), int(width), 3)
+    canvas = np.asarray(bg.buffer_rgba())
     return canvas
 
 # image drawed by opencv is not good.
