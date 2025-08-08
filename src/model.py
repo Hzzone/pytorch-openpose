@@ -29,7 +29,7 @@ class bodypose_model(nn.Module):
         no_relu_layers = ['conv5_5_CPM_L1', 'conv5_5_CPM_L2', 'Mconv7_stage2_L1',\
                           'Mconv7_stage2_L2', 'Mconv7_stage3_L1', 'Mconv7_stage3_L2',\
                           'Mconv7_stage4_L1', 'Mconv7_stage4_L2', 'Mconv7_stage5_L1',\
-                          'Mconv7_stage5_L2', 'Mconv7_stage6_L1', 'Mconv7_stage6_L1']
+                          'Mconv7_stage5_L2', 'Mconv7_stage6_L1', 'Mconv7_stage6_L2']
         blocks = {}
         block0 = OrderedDict([
                       ('conv1_1', [3, 64, 3, 1, 1]),
